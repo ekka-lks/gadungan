@@ -35,7 +35,7 @@ Setelah ini lu udah ada di dalam folder proyek, dan siap mulai kerja.
 Pull = ambil update terbaru dari temen-temen yang udah push ke repo. Lakuin ini **setiap kali mau mulai kerja** biar file lu selalu up-to-date.
 
 ```bash
-git pull origin main
+git pull origin main atau git pull aja
 ```
 
 ---
