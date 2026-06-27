@@ -13,6 +13,7 @@ class SensorLog extends Model
         'turbidity_value',
         'tds_value',
         'temperature_value',
+        'hcn_estimated',
         'safety_status',
     ];
 

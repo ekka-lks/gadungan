@@ -221,8 +221,8 @@
                 </div>
             </section>
 
-            <!-- Cards Grid: Metrics Indicators -->
-            <section class="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <!-- Cards Grid: Metrics Indicators (5 columns: pH, Turbidity, TDS, Temp, HCN) -->
+            <section class="grid grid-cols-1 md:grid-cols-5 gap-6">
                 <!-- Card 1: pH Level -->
                 <div class="bg-[#151f32]/60 border border-[#233554] rounded-2xl p-5 flex flex-col justify-between hover:border-emerald-500/30 transition duration-300">
                     <div class="flex justify-between items-start">
@@ -255,7 +255,7 @@
                 <div class="bg-[#151f32]/60 border border-[#233554] rounded-2xl p-5 flex flex-col justify-between hover:border-blue-500/30 transition duration-300">
                     <div class="flex justify-between items-start">
                         <div>
-                            <p class="text-slate-400 text-xs font-semibold tracking-wider uppercase">Total Dissolved Solids (TDS)</p>
+                            <p class="text-slate-400 text-xs font-semibold tracking-wider uppercase">TDS</p>
                             <h3 class="text-3xl font-extrabold text-white mt-2"><span x-text="latestVal.tds">--</span> <span class="text-sm font-semibold text-slate-500">ppm</span></h3>
                         </div>
                         <div :class="getStatusBadgeClass('tds')" class="text-xs px-2 py-1 rounded-lg border font-medium uppercase tracking-wider" x-text="getValStatus('tds')"></div>
@@ -277,6 +277,76 @@
                     <div class="h-10 mt-4 relative">
                         <canvas id="sparklineTemp"></canvas>
                     </div>
+                </div>
+
+                <!-- Card 5: HCN Estimation (AI Model) -->
+                <div class="bg-[#151f32]/60 border border-violet-500/20 rounded-2xl p-5 flex flex-col justify-between hover:border-violet-500/40 transition duration-300 relative overflow-hidden">
+                    <!-- AI badge -->
+                    <div class="absolute top-3 right-3 bg-violet-500/10 border border-violet-500/30 text-violet-400 text-[9px] font-bold px-1.5 py-0.5 rounded tracking-widest uppercase">AI Model</div>
+                    <div class="flex justify-between items-start">
+                        <div class="pr-14">
+                            <p class="text-slate-400 text-xs font-semibold tracking-wider uppercase">Estimasi HCN</p>
+                            <h3 class="text-2xl font-extrabold text-white mt-2">
+                                <span x-text="latestVal.hcn !== '--' ? parseFloat(latestVal.hcn).toFixed(3) : '--'">--</span>
+                                <span class="text-xs font-semibold text-slate-500"> mg/L</span>
+                            </h3>
+                        </div>
+                    </div>
+                    <!-- HCN safety gauge bar -->
+                    <div class="mt-4">
+                        <div class="flex justify-between text-[10px] text-slate-500 mb-1">
+                            <span>0</span>
+                            <span class="text-emerald-400">Aman &lt;0.5</span>
+                            <span class="text-amber-400">Proses &lt;3</span>
+                            <span class="text-rose-400">15+</span>
+                        </div>
+                        <div class="w-full bg-[#1b2a47] rounded-full h-2 overflow-hidden">
+                            <!-- Gradient: green→yellow→red -->
+                            <div class="h-full rounded-full transition-all duration-700"
+                                :class="getHcnBarClass()"
+                                :style="'width: ' + getHcnBarWidth() + '%'"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- AI Recommendation Banner -->
+            <section
+                :class="getRecommendationBannerClass()"
+                class="border rounded-2xl px-6 py-4 flex items-start space-x-4 transition-all duration-500">
+                <div class="shrink-0 mt-0.5">
+                    <!-- Icon berubah sesuai status -->
+                    <template x-if="latestStatus === 'Bahaya'">
+                        <svg class="w-6 h-6 text-rose-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                        </svg>
+                    </template>
+                    <template x-if="latestStatus === 'Proses'">
+                        <svg class="w-6 h-6 text-amber-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
+                        </svg>
+                    </template>
+                    <template x-if="latestStatus === 'Aman' || latestStatus === 'INIT' || latestStatus === ''">
+                        <svg class="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </template>
+                </div>
+                <div class="flex-1">
+                    <p class="text-xs font-bold uppercase tracking-widest mb-0.5"
+                       :class="latestStatus === 'Bahaya' ? 'text-rose-400' : latestStatus === 'Proses' ? 'text-amber-400' : 'text-emerald-400'">
+                        Rekomendasi AI &mdash; <span x-text="latestStatus"></span>
+                    </p>
+                    <p class="text-sm text-slate-200 leading-relaxed" x-text="latestRecommendation"></p>
+                </div>
+                <!-- HCN inline pill -->
+                <div class="shrink-0 text-right">
+                    <p class="text-[10px] text-slate-500 uppercase tracking-wider">HCN Estimasi</p>
+                    <p class="text-lg font-bold"
+                       :class="latestStatus === 'Bahaya' ? 'text-rose-300' : latestStatus === 'Proses' ? 'text-amber-300' : 'text-emerald-300'">
+                        <span x-text="latestVal.hcn !== '--' ? parseFloat(latestVal.hcn).toFixed(3) : '--'">--</span>
+                        <span class="text-xs text-slate-500"> mg/L</span>
+                    </p>
                 </div>
             </section>
 
@@ -412,8 +482,13 @@
                     ph: '--',
                     turbidity: '--',
                     tds: '--',
-                    temp: '--'
+                    temp: '--',
+                    hcn: '--'   // Estimasi kadar HCN dari AI model ESP32
                 },
+
+                // Status dan rekomendasi terbaru
+                latestStatus: 'INIT',
+                latestRecommendation: 'Menunggu data dari sensor...',
 
                 // ChartJS instances
                 mainChart: null,
@@ -436,11 +511,51 @@
                 updateLatestValues() {
                     if (this.logs && this.logs.length > 0) {
                         const lastLog = this.logs[this.logs.length - 1];
-                        this.latestVal.ph = parseFloat(lastLog.ph_value).toFixed(1);
-                        this.latestVal.turbidity = parseFloat(lastLog.turbidity_value).toFixed(1);
-                        this.latestVal.tds = parseFloat(lastLog.tds_value).toFixed(1);
-                        this.latestVal.temp = parseFloat(lastLog.temperature_value).toFixed(1);
+                        this.latestVal.ph         = parseFloat(lastLog.ph_value).toFixed(1);
+                        this.latestVal.turbidity   = parseFloat(lastLog.turbidity_value).toFixed(1);
+                        this.latestVal.tds         = parseFloat(lastLog.tds_value).toFixed(1);
+                        this.latestVal.temp        = parseFloat(lastLog.temperature_value).toFixed(1);
+                        this.latestVal.hcn         = lastLog.hcn_estimated != null
+                            ? parseFloat(lastLog.hcn_estimated).toFixed(4)
+                            : '--';
+
+                        // Sinkronisasi status & rekomendasi dari data log terbaru
+                        this.latestStatus = lastLog.safety_status || 'INIT';
+                        this.latestRecommendation = this.buildRecommendationText(
+                            this.latestStatus,
+                            parseFloat(lastLog.ph_value),
+                            parseFloat(lastLog.turbidity_value),
+                            parseFloat(lastLog.tds_value),
+                            lastLog.hcn_estimated != null ? parseFloat(lastLog.hcn_estimated) : null
+                        );
                     }
+                },
+
+                /**
+                 * Bangun teks rekomendasi dari data log (mirror logika SensorController PHP).
+                 */
+                buildRecommendationText(status, ph, turb, tds, hcn) {
+                    if (status === 'Bahaya') {
+                        let detail = [];
+                        if (ph < 5.5 || ph > 9.0)          detail.push(`pH ekstrem (${ph.toFixed(1)})`);
+                        if (turb > 600)                    detail.push(`kekeruhan sangat tinggi (${turb.toFixed(0)} NTU)`);
+                        if (tds > 700)                     detail.push(`TDS sangat tinggi (${tds.toFixed(0)} ppm)`);
+                        if (hcn !== null && hcn > 3.0)     detail.push(`estimasi HCN kritis (${hcn.toFixed(3)} mg/L)`);
+                        const detailStr = detail.length ? ' Penyebab: ' + detail.join(', ') + '.' : '';
+                        return 'SEGERA ganti air rendaman!' + detailStr + ' Jangan konsumsi gadung sebelum status berubah menjadi Aman.';
+                    }
+                    if (status === 'Proses') {
+                        let hints = [];
+                        if (turb > 300) hints.push('ganti air lebih sering (tiap 6 jam)');
+                        if (tds > 400)  hints.push('gunakan air mengalir jika memungkinkan');
+                        if (ph < 6.5)   hints.push('pantau pH mendekati netral');
+                        const hintsStr = hints.length ? ' Saran: ' + hints.join('; ') + '.' : '';
+                        return 'Proses detoksifikasi berjalan.' + hintsStr + ' Lanjutkan perendaman dan pantau setiap 8–12 jam.';
+                    }
+                    if (status === 'Aman') {
+                        return 'Air rendaman dalam kondisi aman. Gadung siap ditiriskan dan diolah lebih lanjut. Konfirmasi secara fisik sebelum diproses ke tahap memasak.';
+                    }
+                    return 'Menunggu data dari sensor...';
                 },
 
                 getValStatus(metric) {
@@ -474,6 +589,40 @@
                         return 'bg-amber-500/10 border-amber-500/30 text-amber-400';
                     }
                     return 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400';
+                },
+
+                /**
+                 * Lebar bar gauge HCN (0–100%), skala log dari 0–15 mg/L.
+                 */
+                getHcnBarWidth() {
+                    if (this.latestVal.hcn === '--') return 2;
+                    const hcn = parseFloat(this.latestVal.hcn);
+                    // Skala 0–15 mg/L → 0–100%
+                    return Math.min(100, Math.max(2, (hcn / 15) * 100));
+                },
+
+                /**
+                 * Warna bar gauge HCN sesuai status.
+                 */
+                getHcnBarClass() {
+                    if (this.latestVal.hcn === '--') return 'bg-slate-600';
+                    const hcn = parseFloat(this.latestVal.hcn);
+                    if (hcn > 3.0)  return 'bg-gradient-to-r from-rose-500 to-rose-400';
+                    if (hcn >= 0.5) return 'bg-gradient-to-r from-amber-500 to-amber-300';
+                    return 'bg-gradient-to-r from-emerald-500 to-emerald-300';
+                },
+
+                /**
+                 * Class background untuk banner rekomendasi AI.
+                 */
+                getRecommendationBannerClass() {
+                    if (this.latestStatus === 'Bahaya') {
+                        return 'bg-rose-500/5 border-rose-500/20';
+                    }
+                    if (this.latestStatus === 'Proses') {
+                        return 'bg-amber-500/5 border-amber-500/20';
+                    }
+                    return 'bg-emerald-500/5 border-emerald-500/20';
                 },
 
                 selectDevice(device) {
