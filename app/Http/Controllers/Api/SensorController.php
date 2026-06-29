@@ -21,6 +21,11 @@ class SensorController extends Controller
             'temperature_value' => 'required|numeric',
             // HCN estimasi dari AI lokal ESP32 (opsional — nullable)
             'hcn_estimated'     => 'nullable|numeric|min:0',
+            // Status deteksi sensor (opsional, default true)
+            'sensor_ph_detected'        => 'nullable|boolean',
+            'sensor_turbidity_detected' => 'nullable|boolean',
+            'sensor_tds_detected'       => 'nullable|boolean',
+            'sensor_temp_detected'      => 'nullable|boolean',
         ]);
 
         $ph         = (float) $request->ph_value;
@@ -57,6 +62,11 @@ class SensorController extends Controller
             'temperature_value' => round($temp,      2),
             'hcn_estimated'     => $hcn !== null ? round($hcn, 4) : null,
             'safety_status'     => $status,
+            // Status keberadaan sensor (dari ESP32 auto-detection)
+            'sensor_ph_detected'        => $request->input('sensor_ph_detected', true),
+            'sensor_turbidity_detected' => $request->input('sensor_turbidity_detected', true),
+            'sensor_tds_detected'       => $request->input('sensor_tds_detected', true),
+            'sensor_temp_detected'      => $request->input('sensor_temp_detected', true),
         ]);
 
         // ──────────────────────────────────────────────────────────────

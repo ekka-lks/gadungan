@@ -44,22 +44,43 @@
     <!-- Main Container -->
     <div class="flex min-h-screen" x-data="dashboardApp()">
         
+        <!-- Backdrop overlay untuk mobile -->
+        <div x-show="sidebarOpen" 
+             x-transition:enter="transition-opacity ease-out duration-300"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition-opacity ease-in duration-200"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             @click="sidebarOpen = false" 
+             class="fixed inset-0 bg-black/60 z-30 md:hidden"></div>
+
         <!-- Sidebar -->
-        <aside class="w-64 bg-[#0f172a] border-r border-[#1e293b] flex flex-col justify-between p-6 shrink-0">
+        <aside 
+            :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
+            class="fixed inset-y-0 left-0 w-64 bg-[#0f172a] border-r border-[#1e293b] flex flex-col justify-between p-6 shrink-0 z-40 md:relative md:translate-x-0 transition-transform duration-300 ease-in-out">
             <div>
-                <!-- Logo / Brand -->
-                <div class="flex items-center space-x-3 mb-10">
-                    <div class="bg-emerald-500/10 p-2 rounded-lg border border-emerald-500/30">
-                        <svg class="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.746 3.746 0 013.296-1.043A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.746 3.746 0 011.043 3.296A3.745 3.745 0 0121 12z" />
-                        </svg>
+                <!-- Logo / Brand & Close Button -->
+                <div class="flex items-center justify-between mb-10">
+                    <div class="flex items-center space-x-3">
+                        <div class="bg-emerald-500/10 p-2 rounded-lg border border-emerald-500/30">
+                            <svg class="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.746 3.746 0 013.296-1.043A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.746 3.746 0 011.043 3.296A3.745 3.745 0 0121 12z" />
+                            </svg>
+                        </div>
+                        <span class="text-xl font-bold tracking-wide bg-gradient-to-r from-emerald-400 to-teal-200 bg-clip-text text-transparent">gadungGuard</span>
                     </div>
-                    <span class="text-xl font-bold tracking-wide bg-gradient-to-r from-emerald-400 to-teal-200 bg-clip-text text-transparent">gadungGuard</span>
+                    <!-- Close button for mobile -->
+                    <button @click="sidebarOpen = false" class="md:hidden p-1 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
                 </div>
 
                 <!-- Nav Menu -->
                 <nav class="space-y-1.5">
-                    <a href="#" class="flex items-center space-x-3 px-4 py-3 rounded-xl bg-gradient-to-r from-emerald-500/10 to-transparent text-emerald-400 border-l-2 border-emerald-500 font-medium transition duration-200">
+                    <a href="{{ url('/') }}" class="flex items-center space-x-3 px-4 py-3 rounded-xl bg-gradient-to-r from-emerald-500/10 to-transparent text-emerald-400 border-l-2 border-emerald-500 font-medium transition duration-200">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
                         </svg>
@@ -77,7 +98,7 @@
                         </svg>
                         <span>Process</span>
                     </a>
-                    <a href="#" class="flex items-center space-x-3 px-4 py-3 rounded-xl text-slate-400 hover:text-slate-200 hover:bg-slate-800/40 transition duration-200">
+                    <a href="{{ route('sensory') }}" class="flex items-center space-x-3 px-4 py-3 rounded-xl text-slate-400 hover:text-slate-200 hover:bg-slate-800/40 transition duration-200">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
                             <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -110,33 +131,42 @@
         <main class="flex-1 bg-[#0c1322] p-8 flex flex-col space-y-6 overflow-y-auto">
 
             <!-- Top Navbar / Header -->
-            <header class="flex justify-between items-center">
-                <div>
-                    <h1 class="text-2xl font-bold tracking-tight text-white">Water Quality Dashboard</h1>
-                    <p class="text-slate-400 text-sm mt-0.5">Real-time wild yam (gadung) soaking monitor</p>
+            <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
+                <div class="flex items-center">
+                    <!-- Hamburger menu button for mobile -->
+                    <button @click="sidebarOpen = true" class="md:hidden mr-3 p-2 rounded-xl bg-[#151f32] border border-[#233554] text-slate-300 hover:text-white transition">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                        </svg>
+                    </button>
+                    <div>
+                        <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-white">Water Quality Dashboard</h1>
+                        <p class="text-slate-400 text-xs sm:text-sm mt-0.5">Real-time wild yam (gadung) soaking monitor</p>
+                    </div>
                 </div>
                 
-                <div class="flex items-center space-x-4">
+                <div class="flex flex-wrap items-center gap-2 sm:gap-3 w-full sm:w-auto justify-end mt-2 sm:mt-0">
                     <!-- Live Polling Toggle -->
                     <button 
                         @click="togglePolling()" 
                         :class="isPolling ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' : 'bg-slate-800/40 border-slate-700/50 text-slate-400'"
-                        class="flex items-center space-x-2 px-3 py-2 rounded-xl border text-sm font-medium transition duration-200 hover:bg-slate-800/80">
-                        <span class="relative flex h-2.5 w-2.5">
+                        class="flex items-center space-x-2 px-2.5 sm:px-3 py-2 rounded-xl border text-xs sm:text-sm font-medium transition duration-200 hover:bg-slate-800/80">
+                        <span class="relative flex h-2 w-2 sm:h-2.5 sm:w-2.5">
                             <span :class="isPolling ? 'animate-ping bg-emerald-400' : 'bg-slate-500'" class="absolute inline-flex h-full w-full rounded-full opacity-75"></span>
-                            <span :class="isPolling ? 'bg-emerald-500' : 'bg-slate-500'" class="relative inline-flex rounded-full h-2.5 w-2.5"></span>
+                            <span :class="isPolling ? 'bg-emerald-500' : 'bg-slate-500'" class="relative inline-flex rounded-full h-2 w-2 sm:h-2.5 sm:w-2.5"></span>
                         </span>
-                        <span x-text="isPolling ? 'Live Polling Active' : 'Live Polling Paused'"></span>
+                        <span class="hidden sm:inline" x-text="isPolling ? 'Live Polling Active' : 'Live Polling Paused'"></span>
+                        <span class="sm:hidden" x-text="isPolling ? 'Live' : 'Paused'"></span>
                     </button>
 
                     <!-- Device Selector Dropdown -->
                     <div class="relative" x-data="{ open: false }">
                         <button 
                             @click="open = !open" 
-                            class="bg-[#151f32]/85 border border-[#233554] px-4 py-2 rounded-xl text-sm font-semibold flex items-center space-x-2 text-white hover:bg-slate-800 transition">
+                            class="bg-[#151f32]/85 border border-[#233554] px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold flex items-center space-x-1.5 sm:space-x-2 text-white hover:bg-slate-800 transition">
                             <span x-text="currentDevice.device_code"></span>
-                            <span class="text-xs text-emerald-400" x-text="'(' + currentDevice.location_name + ')'"></span>
-                            <svg class="w-4 h-4 text-slate-400 transition" :class="open ? 'rotate-180' : ''" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <span class="hidden md:inline text-xs text-emerald-400" x-text="'(' + currentDevice.location_name + ')'"></span>
+                            <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-400 transition" :class="open ? 'rotate-180' : ''" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
                             </svg>
                         </button>
@@ -163,20 +193,20 @@
                     </div>
 
                     <!-- User Profile Dropdown -->
-                    <div class="flex items-center space-x-3">
+                    <div class="flex items-center space-x-2 sm:space-x-3">
                         <div class="relative">
                             <button class="bg-[#151f32] p-2 rounded-xl border border-[#233554] text-slate-300 hover:text-white transition relative">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a9.04 9.04 0 01-1.655-.13h-.007a3 3 0 01-2.247-2.925V9c0-3.313-2.687-6-6-6S1.5 5.687 1.5 9v5.027a3 3 0 01-2.247 2.925H-.75c-.621 0-1.125.504-1.125 1.125v1.5a3.375 3.375 0 003.375 3.375h16.5a3.375 3.375 0 003.375-3.375v-1.5c0-.621-.504-1.125-1.125-1.125h-.007zM12 21a3 3 0 01-6 0" />
                                 </svg>
-                                <span class="absolute top-1 right-1 w-2 h-2 bg-rose-500 rounded-full"></span>
+                                <span class="absolute top-1 right-1 w-1.5 h-1.5 sm:w-2 sm:h-2 bg-rose-500 rounded-full"></span>
                             </button>
                         </div>
-                        <div class="flex items-center space-x-2 bg-[#151f32] px-3.5 py-1.5 rounded-xl border border-[#233554]">
-                            <div class="w-7 h-7 rounded-full bg-emerald-500 flex items-center justify-center font-bold text-xs text-slate-900">
+                        <div class="flex items-center space-x-2 bg-[#151f32] px-2.5 sm:px-3.5 py-1.5 rounded-xl border border-[#233554]">
+                            <div class="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-emerald-500 flex items-center justify-center font-bold text-xs text-slate-900">
                                 {{ strtoupper(substr(auth()->user()->name ?? 'AD', 0, 2)) }}
                             </div>
-                            <span class="text-sm font-medium text-slate-200">{{ auth()->user()->name ?? 'Administrator' }}</span>
+                            <span class="hidden sm:inline text-xs sm:text-sm font-medium text-slate-200">{{ auth()->user()->name ?? 'Administrator' }}</span>
                         </div>
                     </div>
                 </div>
@@ -350,6 +380,8 @@
                 </div>
             </section>
 
+
+
             <!-- Bottom Operations Grid -->
             <section class="grid grid-cols-1 md:grid-cols-5 gap-6">
                 
@@ -466,6 +498,11 @@
 
     <!-- Dashboard Frontend Reactivity Logic -->
     <script>
+        // Simpan instance Chart secara non-reaktif di luar objek data Alpine
+        // untuk mencegah bug "freezing" akibat siklus reaktivitas Alpine.js
+        let mainChartInstance = null;
+        let sparklineInstances = {};
+
         function dashboardApp() {
             return {
                 devices: @json($devices),
@@ -477,6 +514,7 @@
                 showToast: false,
                 confirmed: false,
                 progress: 68,
+                sidebarOpen: false,
                 
                 latestVal: {
                     ph: '--',
@@ -489,10 +527,6 @@
                 // Status dan rekomendasi terbaru
                 latestStatus: 'INIT',
                 latestRecommendation: 'Menunggu data dari sensor...',
-
-                // ChartJS instances
-                mainChart: null,
-                sparklines: {},
 
                 init() {
                     this.updateLatestValues();
@@ -675,24 +709,26 @@
                     });
 
                     // Update main chart
-                    this.mainChart.data.labels = labels;
-                    this.mainChart.data.datasets[0].data = phData;
-                    this.mainChart.data.datasets[1].data = turbData;
-                    this.mainChart.data.datasets[2].data = tdsData;
-                    this.mainChart.data.datasets[3].data = tempData;
-                    this.mainChart.update();
+                    if (mainChartInstance) {
+                        mainChartInstance.data.labels = labels;
+                        mainChartInstance.data.datasets[0].data = phData;
+                        mainChartInstance.data.datasets[1].data = turbData;
+                        mainChartInstance.data.datasets[2].data = tdsData;
+                        mainChartInstance.data.datasets[3].data = tempData;
+                        mainChartInstance.update('none');
+                    }
 
                     // Update sparklines
-                    this.updateSparkline(this.sparklines.ph, phData, '#10b981');
-                    this.updateSparkline(this.sparklines.turbidity, turbData, '#f43f5e');
-                    this.updateSparkline(this.sparklines.tds, tdsData, '#3b82f6');
-                    this.updateSparkline(this.sparklines.temp, tempData, '#f59e0b');
+                    if (sparklineInstances.ph) this.updateSparkline(sparklineInstances.ph, phData, '#10b981');
+                    if (sparklineInstances.turbidity) this.updateSparkline(sparklineInstances.turbidity, turbData, '#f43f5e');
+                    if (sparklineInstances.tds) this.updateSparkline(sparklineInstances.tds, tdsData, '#3b82f6');
+                    if (sparklineInstances.temp) this.updateSparkline(sparklineInstances.temp, tempData, '#f59e0b');
                 },
 
                 updateSparkline(chart, data, color) {
                     chart.data.labels = data.map((_, i) => i);
                     chart.data.datasets[0].data = data;
-                    chart.update();
+                    chart.update('none');
                 },
 
                 renderMainChart() {
@@ -713,7 +749,7 @@
                         return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                     });
 
-                    this.mainChart = new Chart(ctx, {
+                    mainChartInstance = new Chart(ctx, {
                         type: 'line',
                         data: {
                             labels: labels,
@@ -842,7 +878,7 @@
                         grad.addColorStop(0, cfg.color + '33'); // 20% opacity
                         grad.addColorStop(1, cfg.color + '00'); // 0% opacity
 
-                        this.sparklines[cfg.id.replace('sparkline', '').toLowerCase()] = new Chart(ctx, {
+                        sparklineInstances[cfg.id.replace('sparkline', '').toLowerCase()] = new Chart(ctx, {
                             type: 'line',
                             data: {
                                 labels: cfg.data.map((_, i) => i),

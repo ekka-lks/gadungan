@@ -12,5 +12,6 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 // Protected Dashboard Routes
 Route::middleware('auth')->group(function () {
     Route::get('/', [DashboardController::class, 'index']);
+    Route::get('/sensory', [DashboardController::class, 'sensory'])->name('sensory');
     Route::get('/devices/{device}/data', [DashboardController::class, 'getDeviceData']);
 });

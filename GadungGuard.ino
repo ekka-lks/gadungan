@@ -129,6 +129,12 @@ String safety_status    = "INIT";
 
 bool wifi_connected  = false;
 bool data_sent_ok    = false;
+
+// Status deteksi sensor (true = terdeteksi, false = tidak ada/rusak)
+bool sensor_ph_detected        = false;
+bool sensor_turbidity_detected = false;
+bool sensor_tds_detected       = false;
+bool sensor_temp_detected      = false;
 unsigned long last_send_time = 0;
 
 // ============================================================
@@ -276,11 +282,46 @@ float readTemperature() {
 }
 
 /**
+ * Mendeteksi keberadaan sensor berdasarkan nilai ADC dan respons.
+ * Sensor analog: jika raw ADC = 0 atau 4095, kemungkinan tidak terpasang.
+ * Sensor DS18B20: jika mengembalikan DEVICE_DISCONNECTED_C, tidak ada.
+ */
+void detectSensors() {
+    // Deteksi pH sensor (ADC harusnya antara 50-4000 jika terpasang)
+    int ph_raw = analogRead(PIN_PH);
+    sensor_ph_detected = (ph_raw > 50 && ph_raw < 4000);
+
+    // Deteksi Turbidity sensor
+    int turb_raw = analogRead(PIN_TURBIDITY);
+    sensor_turbidity_detected = (turb_raw > 50 && turb_raw < 4000);
+
+    // Deteksi TDS sensor
+    int tds_raw = analogRead(PIN_TDS);
+    sensor_tds_detected = (tds_raw > 50 && tds_raw < 4000);
+
+    // Deteksi DS18B20 (suhu)
+    tempSensor.requestTemperatures();
+    float testTemp = tempSensor.getTempCByIndex(0);
+    sensor_temp_detected = (testTemp != DEVICE_DISCONNECTED_C);
+
+    Serial.println(F("--- Status Deteksi Sensor ---"));
+    Serial.printf("  pH Sensor       : %s\n", sensor_ph_detected        ? "TERDETEKSI" : "TIDAK ADA");
+    Serial.printf("  Turbidity Sensor: %s\n", sensor_turbidity_detected ? "TERDETEKSI" : "TIDAK ADA");
+    Serial.printf("  TDS Sensor      : %s\n", sensor_tds_detected       ? "TERDETEKSI" : "TIDAK ADA");
+    Serial.printf("  Temp DS18B20    : %s\n", sensor_temp_detected      ? "TERDETEKSI" : "TIDAK ADA");
+    Serial.println(F("-----------------------------"));
+}
+
+/**
  * Membaca semua sensor sekaligus dan simpan ke variabel global.
- * Urutan: Suhu → TDS (butuh nilai suhu) → pH → Turbidity
+ * Urutan: Deteksi → Suhu → TDS (butuh nilai suhu) → pH → Turbidity
  */
 void readAllSensors() {
     Serial.println(F("\n--- Membaca Sensor ---"));
+    
+    // Deteksi keberadaan sensor terlebih dahulu
+    detectSensors();
+    
     temperature_value = readTemperature();
     tds_value         = readTDS(temperature_value);
     ph_value          = readPH();
@@ -378,14 +419,20 @@ void runLocalAIModel() {
 void sendDataToServer() {
     Serial.println(F("\n--- Mengirim Data ke Server ---"));
 
-    // Susun payload JSON
-    StaticJsonDocument<256> doc;
+    // Susun payload JSON (diperbesar untuk menampung status sensor)
+    StaticJsonDocument<384> doc;
     doc["device_id"]         = DEVICE_ID;
     doc["ph_value"]          = round(ph_value          * 100.0) / 100.0;
     doc["turbidity_value"]   = round(turbidity_value   * 100.0) / 100.0;
     doc["tds_value"]         = round(tds_value         * 100.0) / 100.0;
     doc["temperature_value"] = round(temperature_value * 100.0) / 100.0;
     doc["hcn_estimated"]     = round(hcn_estimated_ppm * 10000.0) / 10000.0;
+
+    // Status keberadaan sensor
+    doc["sensor_ph_detected"]        = sensor_ph_detected;
+    doc["sensor_turbidity_detected"] = sensor_turbidity_detected;
+    doc["sensor_tds_detected"]       = sensor_tds_detected;
+    doc["sensor_temp_detected"]      = sensor_temp_detected;
 
     String json_body;
     serializeJson(doc, json_body);
