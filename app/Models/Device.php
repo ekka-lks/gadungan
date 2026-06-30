@@ -17,10 +17,19 @@ class Device extends Model
         'yam_weight',
         'water_volume',
         'sensor_mode',
+        'process_stage',
     ];
 
     public function sensorLogs(): HasMany
     {
         return $this->hasMany(SensorLog::class);
+    }
+
+    /**
+     * Get the hardware sensor physically assigned to this perendaman (Device).
+     */
+    public function hardwareSensor()
+    {
+        return $this->hasOne(HardwareSensor::class, 'assigned_device_id');
     }
 }

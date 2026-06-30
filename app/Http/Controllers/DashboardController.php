@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Device;
+use App\Models\HardwareSensor;
 use Illuminate\Http\Request;
 
 class DashboardController extends Controller
@@ -93,7 +94,8 @@ class DashboardController extends Controller
 
         return response()->json([
             'device' => $device,
-            'logs' => $logs
+            'logs' => $logs,
+            'server_time' => now()->toIso8601String()
         ]);
     }
 
@@ -197,6 +199,68 @@ class DashboardController extends Controller
         } else {
             return 'Aman';
         }
+    }
+
+    /**
+     * Display the Kanban-based process board.
+     */
+    public function process()
+    {
+        // Load all devices with their hardware sensor and latest sensor log
+        $devices = Device::with(['hardwareSensor', 'sensorLogs' => function($query) {
+            $query->orderBy('created_at', 'desc')->take(1);
+        }])->get();
+
+        // Load all available physical sensors
+        $hardwareSensors = HardwareSensor::all();
+        
+        $serverTime = now()->toIso8601String();
+
+        return view('process', compact('devices', 'hardwareSensors', 'serverTime'));
+    }
+
+    /**
+     * Update the process stage of a batch/device.
+     */
+    public function updateStage(Request $request)
+    {
+        $request->validate([
+            'device_id' => 'required|exists:devices,id',
+            'stage' => 'required|in:soaking,rinsing,drying,completed',
+        ]);
+
+        $device = Device::find($request->device_id);
+        $device->update(['process_stage' => $request->stage]);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Tahapan proses berhasil diperbarui ke ' . $request->stage,
+            'device' => $device
+        ]);
+    }
+
+    /**
+     * Assign a hardware sensor to a specific perendaman batch (Device).
+     */
+    public function assignSensor(Request $request)
+    {
+        $request->validate([
+            'sensor_id' => 'required|exists:hardware_sensors,id',
+            'device_id' => 'nullable|exists:devices,id',
+        ]);
+
+        $sensor = HardwareSensor::find($request->sensor_id);
+        
+        // Detach the sensor from any existing batch (device)
+        $sensor->update(['assigned_device_id' => $request->device_id]);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => $request->device_id 
+                ? 'Sensor "' . $sensor->name . '" berhasil dipasang ke rendaman.' 
+                : 'Sensor "' . $sensor->name . '" berhasil dilepas.',
+            'sensor' => $sensor
+        ]);
     }
 }
 

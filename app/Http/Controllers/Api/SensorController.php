@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\SensorLog;
+use App\Models\HardwareSensor;
 
 class SensorController extends Controller
 {
@@ -159,5 +160,30 @@ class SensorController extends Controller
 
         return 'Air rendaman dalam kondisi aman. Gadung siap ditiriskan dan diolah lebih lanjut.'
              . ' Konfirmasi secara fisik sebelum diproses ke tahap memasak.';
+    }
+
+    public function getConfig(Request $request)
+    {
+        $request->validate([
+            'chip_id' => 'required|string',
+        ]);
+
+        $chipId = $request->query('chip_id');
+
+        // Find or create the sensor mapping
+        // e.g. for MAC address "XX:XX:XX:XX:XX:XX"
+        $sensor = HardwareSensor::firstOrCreate(
+            ['chip_identifier' => $chipId],
+            ['name' => 'Sensor Kit ' . substr(str_replace(':', '', $chipId), -4)]
+        );
+
+        // Update last seen
+        $sensor->update(['last_seen_at' => now()]);
+
+        return response()->json([
+            'status' => 'success',
+            'sensor_name' => $sensor->name,
+            'device_id' => $sensor->assigned_device_id, // can be null
+        ]);
     }
 }
