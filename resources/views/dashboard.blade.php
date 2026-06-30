@@ -105,6 +105,12 @@
                         </svg>
                         <span>Sensory</span>
                     </a>
+                    <a href="{{ route('rendaman') }}" class="flex items-center space-x-3 px-4 py-3 rounded-xl text-slate-400 hover:text-slate-200 hover:bg-slate-800/40 transition duration-200 text-left">
+    <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+    </svg>
+    <span>Daftarkan Rendaman</span>
+</a>
                     <a href="#" class="flex items-center space-x-3 px-4 py-3 rounded-xl text-slate-400 hover:text-slate-200 hover:bg-slate-800/40 transition duration-200">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.43l-1.003.828c-.293.241-.438.613-.43.992a7.723 7.723 0 010 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.43l1.004-.827c.292-.24.437-.613.43-.991a6.936 6.936 0 010-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28z" />
@@ -158,6 +164,15 @@
                         <span class="hidden sm:inline" x-text="isPolling ? 'Live Polling Active' : 'Live Polling Paused'"></span>
                         <span class="sm:hidden" x-text="isPolling ? 'Live' : 'Paused'"></span>
                     </button>
+
+                    <a 
+    href="{{ route('rendaman') }}" 
+    class="bg-emerald-500 hover:bg-emerald-600 active:scale-[0.98] text-slate-950 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center space-x-1.5 sm:space-x-2 transition shadow-lg shadow-emerald-500/10">
+    <svg class="w-4 h-4 text-slate-950" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+    </svg>
+    <span>Daftarkan Rendaman</span>
+</a>
 
                     <!-- Device Selector Dropdown -->
                     <div class="relative" x-data="{ open: false }">
@@ -214,15 +229,15 @@
 
             <!-- Main Charts & Water Quality Graph -->
             <section class="bg-[#151f32]/60 backdrop-blur-md border border-[#233554] rounded-2xl p-6 relative overflow-hidden">
-                <div class="flex justify-between items-center mb-6">
-                    <div class="flex items-center space-x-6">
+                <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-6">
+                    <div class="flex flex-col sm:flex-row sm:items-center gap-4">
                         <h2 class="text-lg font-bold text-white tracking-wide">Sensor Metrics Stream</h2>
                         
                         <!-- Legends with values -->
-                        <div class="flex items-center space-x-5 text-xs text-slate-400">
+                        <div class="flex flex-wrap items-center gap-3 text-xs text-slate-400">
                             <span class="flex items-center space-x-1.5">
                                 <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-                                <span>pH value (<span x-text="latestVal.ph"></span>)</span>
+                                <span>pH (<span x-text="latestVal.ph"></span>)</span>
                             </span>
                             <span class="flex items-center space-x-1.5">
                                 <span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span>
@@ -234,25 +249,62 @@
                             </span>
                             <span class="flex items-center space-x-1.5">
                                 <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
-                                <span>Temperature (<span x-text="latestVal.temp"></span>°C)</span>
+                                <span>Temp (<span x-text="latestVal.temp"></span>°C)</span>
                             </span>
                         </div>
                     </div>
 
-                    <div class="flex space-x-2">
-                        <button class="bg-[#1b2a47] border border-[#2d4672] text-xs font-semibold px-3 py-1.5 rounded-lg text-emerald-400">Sensor line</button>
-                        <button class="bg-[#151f32]/80 border border-[#233554] text-xs font-semibold px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition">Last 24 hours</button>
+                    <div class="flex flex-wrap items-center gap-2 w-full lg:w-auto justify-start lg:justify-end">
+                        <!-- Date Selector -->
+                        <div class="flex items-center space-x-2">
+                            <label class="text-xs font-semibold text-slate-400">Rekap Tanggal:</label>
+                            <input 
+                                type="date" 
+                                x-model="filterDate"
+                                @change="fetchDeviceData()"
+                                class="bg-[#151f32]/85 border border-[#233554] px-3 py-1.5 rounded-lg text-xs font-semibold text-white focus:outline-none focus:border-emerald-500 transition cursor-pointer"
+                                max="{{ date('Y-m-d') }}">
+                        </div>
+
+                        <!-- Reset to Live Stream -->
+                        <template x-if="filterDate">
+                            <button 
+                                @click="clearFilterDate()"
+                                class="bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-semibold px-3 py-1.5 rounded-lg hover:bg-emerald-500/20 transition flex items-center space-x-1.5">
+                                <span class="relative flex h-1.5 w-1.5">
+                                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                    <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
+                                </span>
+                                <span>Kembali ke Live Stream</span>
+                            </button>
+                        </template>
                     </div>
                 </div>
 
-                <!-- Main Chart Canvas -->
+                <!-- Main Chart Canvas & Empty State -->
                 <div class="h-80 w-full relative">
-                    <canvas id="mainChart"></canvas>
+                    <canvas id="mainChart" x-show="logs.length > 0"></canvas>
+                    
+                    <!-- Empty State Overlay -->
+                    <div 
+                        x-show="logs.length === 0"
+                        x-cloak
+                        class="absolute inset-0 flex flex-col items-center justify-center bg-[#151f32]/40 rounded-xl border border-slate-800/40 p-6 text-center">
+                        <div class="bg-[#1b2a47] p-3 rounded-full mb-3 text-slate-400 border border-[#233554]">
+                            <svg class="w-6 h-6 text-amber-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+                            </svg>
+                        </div>
+                        <p class="text-sm font-bold text-white">Tidak Ada Data Sensor</p>
+                        <p class="text-xs text-slate-400 mt-1 max-w-xs">
+                            Tidak ditemukan log sensor untuk rendaman ini pada tanggal <strong class="text-emerald-400" x-text="filterDate"></strong>. Silakan pilih tanggal lain atau kembali ke siaran langsung.
+                        </p>
+                    </div>
                 </div>
             </section>
 
             <!-- Cards Grid: Metrics Indicators (5 columns: pH, Turbidity, TDS, Temp, HCN) -->
-            <section class="grid grid-cols-1 md:grid-cols-5 gap-6">
+            <section class="grid grid-cols-2 md:grid-cols-5 gap-4 sm:gap-6">
                 <!-- Card 1: pH Level -->
                 <div class="bg-[#151f32]/60 border border-[#233554] rounded-2xl p-5 flex flex-col justify-between hover:border-emerald-500/30 transition duration-300">
                     <div class="flex justify-between items-start">
@@ -310,7 +362,7 @@
                 </div>
 
                 <!-- Card 5: HCN Estimation (AI Model) -->
-                <div class="bg-[#151f32]/60 border border-violet-500/20 rounded-2xl p-5 flex flex-col justify-between hover:border-violet-500/40 transition duration-300 relative overflow-hidden">
+                <div class="col-span-2 md:col-span-1 bg-[#151f32]/60 border border-violet-500/20 rounded-2xl p-5 flex flex-col justify-between hover:border-violet-500/40 transition duration-300 relative overflow-hidden">
                     <!-- AI badge -->
                     <div class="absolute top-3 right-3 bg-violet-500/10 border border-violet-500/30 text-violet-400 text-[9px] font-bold px-1.5 py-0.5 rounded tracking-widest uppercase">AI Model</div>
                     <div class="flex justify-between items-start">
@@ -489,10 +541,11 @@
                 </svg>
             </div>
             <div>
-                <p class="text-sm font-bold text-white">Soaking Cycle Confirmed!</p>
-                <p class="text-xs text-emerald-400/80 mt-0.5">Logs marked as physically verified. Cycle closed.</p>
+                <p class="text-sm font-bold text-white">{{ session('success') ? 'Pendaftaran Berhasil!' : 'Soaking Cycle Confirmed!' }}</p>
+                <p class="text-xs text-emerald-400/80 mt-0.5">{{ session('success') ?? 'Logs marked as physically verified. Cycle closed.' }}</p>
             </div>
         </div>
+
 
     </div>
 
@@ -511,10 +564,11 @@
                 
                 isPolling: true,
                 pollingInterval: null,
-                showToast: false,
+                showToast: {{ session('success') ? 'true' : 'false' }},
                 confirmed: false,
                 progress: 68,
                 sidebarOpen: false,
+                filterDate: '{{ date('Y-m-d') }}',
                 
                 latestVal: {
                     ph: '--',
@@ -529,10 +583,15 @@
                 latestRecommendation: 'Menunggu data dari sensor...',
 
                 init() {
-                    this.updateLatestValues();
                     this.renderMainChart();
                     this.renderSparklines();
-                    this.startPolling();
+                    this.fetchDeviceData();
+                    
+                    if (this.showToast) {
+                        setTimeout(() => {
+                            this.showToast = false;
+                        }, 5000);
+                    }
                     
                     // Periodically increment progress to simulate real life cycle progress
                     setInterval(() => {
@@ -666,13 +725,25 @@
                 },
 
                 fetchDeviceData() {
-                    fetch(`/devices/${this.currentDevice.id}/data`)
+                    let url = `/devices/${this.currentDevice.id}/data`;
+                    if (this.filterDate) {
+                        url += `?date=${this.filterDate}`;
+                        this.isPolling = false;
+                    }
+                    fetch(url)
                         .then(res => res.json())
                         .then(data => {
                             this.logs = data.logs;
                             this.updateLatestValues();
                             this.updateCharts();
                         });
+                },
+
+                clearFilterDate() {
+                    this.filterDate = '';
+                    this.isPolling = true;
+                    this.fetchDeviceData();
+                    this.startPolling();
                 },
 
                 startPolling() {

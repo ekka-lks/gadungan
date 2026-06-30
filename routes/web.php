@@ -13,5 +13,7 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 Route::middleware('auth')->group(function () {
     Route::get('/', [DashboardController::class, 'index']);
     Route::get('/sensory', [DashboardController::class, 'sensory'])->name('sensory');
+    Route::get('/rendaman', [DashboardController::class, 'rendaman'])->name('rendaman');
     Route::get('/devices/{device}/data', [DashboardController::class, 'getDeviceData']);
+    Route::post('/devices', [DashboardController::class, 'storeDevice'])->name('devices.store');
 });

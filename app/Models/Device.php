@@ -11,6 +11,12 @@ class Device extends Model
         'device_code',
         'location_name',
         'status',
+        'detoxification_method',
+        'concentration',
+        'slice_thickness',
+        'yam_weight',
+        'water_volume',
+        'sensor_mode',
     ];
 
     public function sensorLogs(): HasMany
