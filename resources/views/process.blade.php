@@ -146,6 +146,16 @@
                 </div>
                 
                 <div class="flex items-center space-x-3">
+                    <!-- Tambah Sensor Button -->
+                    <button 
+                        @click="showAddSensorModal = true"
+                        class="bg-emerald-500 hover:bg-emerald-600 active:scale-[0.98] text-slate-950 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center space-x-1.5 transition shadow-lg shadow-emerald-500/10">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                        </svg>
+                        <span>Tambah Sensor</span>
+                    </button>
+
                     <!-- Live refresh indicator -->
                     <div class="flex items-center space-x-1.5 bg-[#151f32] border border-[#233554] px-3.5 py-2 rounded-xl text-xs text-emerald-400 font-medium">
                         <span class="relative flex h-2 w-2">
@@ -348,24 +358,42 @@
                                         x-show="dropdownOpen"
                                         @click.away="dropdownOpen = false"
                                         x-transition
-                                        class="absolute left-0 right-0 mt-1 rounded-xl bg-[#131c2e] border border-[#233554] shadow-2xl z-20 overflow-hidden max-h-36 overflow-y-auto">
+                                        class="absolute left-0 right-0 mt-1 rounded-xl bg-[#131c2e] border border-[#233554] shadow-2xl z-20 overflow-hidden max-h-48 overflow-y-auto">
                                         <div class="py-1">
                                             <template x-for="sensor in sensors" :key="sensor.id">
-                                                <button 
-                                                    @click="assignSensor(sensor.id, device.id); dropdownOpen = false"
-                                                    :disabled="sensor.assigned_device_id === device.id"
-                                                    :class="sensor.assigned_device_id === device.id ? 'bg-emerald-500/10 text-emerald-400 font-medium' : 'text-slate-300 hover:bg-slate-800'"
-                                                    class="w-full text-left px-3.5 py-2 text-xs flex justify-between items-center transition disabled:cursor-not-allowed">
-                                                    <div>
-                                                        <span class="block font-medium" x-text="sensor.name"></span>
-                                                        <span class="text-[9px] text-slate-500" x-text="sensor.chip_identifier"></span>
-                                                    </div>
-                                                    <span class="text-[9px] px-1.5 py-0.5 rounded border border-slate-700 bg-slate-800 text-slate-400"
-                                                          x-text="sensor.assigned_device_id ? 'Sibuk' : 'Tersedia'"></span>
-                                                </button>
+                                                <div class="flex items-center justify-between px-3.5 py-2 text-xs transition"
+                                                     :class="sensor.assigned_device_id === device.id ? 'bg-emerald-500/10' : 'hover:bg-slate-800'">
+                                                    <button 
+                                                        @click="assignSensor(sensor.id, device.id); dropdownOpen = false"
+                                                        :disabled="sensor.assigned_device_id === device.id"
+                                                        class="flex-1 text-left flex items-center space-x-2 disabled:cursor-not-allowed"
+                                                        :class="sensor.assigned_device_id === device.id ? 'text-emerald-400 font-medium' : 'text-slate-300'">
+                                                        <div class="flex-1">
+                                                            <span class="block font-medium" x-text="sensor.name"></span>
+                                                            <span class="text-[9px] text-slate-500" x-text="sensor.chip_identifier"></span>
+                                                        </div>
+                                                        <div class="flex items-center space-x-1.5">
+                                                            <!-- Online/Offline badge -->
+                                                            <span class="text-[9px] px-1.5 py-0.5 rounded border"
+                                                                  :class="isSensorHwOnline(sensor) ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400' : 'border-slate-700 bg-slate-800 text-slate-500'"
+                                                                  x-text="isSensorHwOnline(sensor) ? 'Online' : 'Offline'"></span>
+                                                            <span class="text-[9px] px-1.5 py-0.5 rounded border border-slate-700 bg-slate-800 text-slate-400"
+                                                                  x-text="sensor.assigned_device_id ? 'Sibuk' : 'Tersedia'"></span>
+                                                        </div>
+                                                    </button>
+                                                    <!-- Delete sensor button -->
+                                                    <button 
+                                                        @click.stop="deleteSensor(sensor.id)"
+                                                        class="ml-2 p-1 rounded hover:bg-rose-500/20 text-slate-600 hover:text-rose-400 transition shrink-0"
+                                                        title="Hapus sensor">
+                                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                                                        </svg>
+                                                    </button>
+                                                </div>
                                             </template>
                                             <template x-if="sensors.length === 0">
-                                                <div class="px-3.5 py-3 text-center text-xs text-slate-500">Belum ada sensor terdaftar. Nyalakan ESP32 terlebih dahulu.</div>
+                                                <div class="px-3.5 py-3 text-center text-xs text-slate-500">Belum ada sensor terdaftar. Nyalakan ESP32 atau klik "Tambah Sensor".</div>
                                             </template>
                                         </div>
                                     </div>
@@ -551,6 +579,61 @@
                 <p class="text-xs text-emerald-400/80 mt-0.5" x-text="toastMessage"></p>
             </div>
         </div>
+
+        <!-- Add Sensor Modal -->
+        <div x-show="showAddSensorModal" 
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition ease-in duration-150"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
+             @click.self="showAddSensorModal = false">
+            <div class="bg-[#131c2e] border border-[#233554] rounded-2xl p-6 w-full max-w-md shadow-2xl"
+                 x-transition:enter="transition ease-out duration-200"
+                 x-transition:enter-start="transform scale-95 opacity-0"
+                 x-transition:enter-end="transform scale-100 opacity-100">
+                <div class="flex justify-between items-center mb-5">
+                    <h3 class="font-bold text-white text-lg">Daftarkan Sensor Baru</h3>
+                    <button @click="showAddSensorModal = false" class="p-1 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 mb-1.5">Nama Sensor</label>
+                        <input type="text" x-model="newSensorName" 
+                               placeholder="Contoh: Sensor Bak-A"
+                               class="w-full bg-[#0c1322] border border-[#233554] rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500 transition">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 mb-1.5">Chip ID / MAC Address</label>
+                        <input type="text" x-model="newSensorChipId" 
+                               placeholder="Contoh: AA:BB:CC:DD:EE:FF"
+                               class="w-full bg-[#0c1322] border border-[#233554] rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500 transition font-mono">
+                        <p class="text-[10px] text-slate-500 mt-1">MAC Address bisa dilihat di Serial Monitor Arduino IDE saat ESP32 terkoneksi WiFi.</p>
+                    </div>
+                    <div x-show="addSensorError" class="bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs px-3 py-2 rounded-lg" x-text="addSensorError"></div>
+                </div>
+
+                <div class="flex gap-3 mt-6">
+                    <button @click="showAddSensorModal = false" 
+                            class="flex-1 bg-slate-800 border border-slate-700 hover:bg-slate-700 text-slate-300 py-2.5 rounded-xl text-sm font-semibold transition">
+                        Batal
+                    </button>
+                    <button @click="addSensor()" 
+                            :disabled="!newSensorName || !newSensorChipId"
+                            :class="(!newSensorName || !newSensorChipId) ? 'opacity-40 cursor-not-allowed' : 'hover:bg-emerald-600 active:scale-[0.98]'"
+                            class="flex-1 bg-emerald-500 text-slate-950 py-2.5 rounded-xl text-sm font-bold transition shadow-lg shadow-emerald-500/10">
+                        Daftarkan
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -564,6 +647,12 @@
                 showToast: false,
                 toastMessage: '',
                 pollingInterval: null,
+
+                // Add Sensor Modal state
+                showAddSensorModal: false,
+                newSensorName: '',
+                newSensorChipId: '',
+                addSensorError: '',
 
                 init() {
                     this.startPolling();
@@ -583,7 +672,14 @@
                 },
 
                 getLatestLog(device) {
-                    return device.sensor_logs && device.sensor_logs.length > 0 ? device.sensor_logs[0] : null;
+                    if (!device.sensor_logs || device.sensor_logs.length === 0) return null;
+                    let latest = device.sensor_logs[0];
+                    for (let i = 1; i < device.sensor_logs.length; i++) {
+                        if (new Date(device.sensor_logs[i].created_at) > new Date(latest.created_at)) {
+                            latest = device.sensor_logs[i];
+                        }
+                    }
+                    return latest;
                 },
 
                 // ── Sensor Status Logic ──
@@ -615,6 +711,14 @@
                     if (status === 'Aman') return 'bg-emerald-500/10 border border-emerald-500/30 text-emerald-400';
                     if (status === 'Proses') return 'bg-amber-500/10 border border-amber-500/30 text-amber-400';
                     return 'bg-rose-500/10 border border-rose-500/30 text-rose-400';
+                },
+
+                // Cek apakah hardware sensor online berdasarkan last_seen_at
+                isSensorHwOnline(sensor) {
+                    if (!sensor.last_seen_at) return false;
+                    const lastSeen = new Date(sensor.last_seen_at).getTime();
+                    const now = new Date(this.serverTime).getTime();
+                    return (now - lastSeen) < 15000; // < 15 detik = online
                 },
 
                 // ── Dynamic Stage Updating ──
@@ -677,6 +781,64 @@
                                 }
                             });
                             
+                            this.triggerToast(data.message);
+                        }
+                    });
+                },
+
+                // ── Add Sensor (Manual Registration) ──
+                addSensor() {
+                    this.addSensorError = '';
+                    fetch('/process/add-sensor', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify({
+                            name: this.newSensorName,
+                            chip_identifier: this.newSensorChipId
+                        })
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            this.sensors.push(data.sensor);
+                            this.showAddSensorModal = false;
+                            this.newSensorName = '';
+                            this.newSensorChipId = '';
+                            this.triggerToast(data.message);
+                        } else if (data.errors) {
+                            const firstKey = Object.keys(data.errors)[0];
+                            this.addSensorError = data.errors[firstKey][0];
+                        }
+                    })
+                    .catch(err => {
+                        this.addSensorError = 'Terjadi kesalahan. Coba lagi.';
+                    });
+                },
+
+                // ── Delete Sensor ──
+                deleteSensor(sensorId) {
+                    if (!confirm('Hapus sensor ini? Data log sensor tetap tersimpan.')) return;
+                    
+                    fetch('/process/delete-sensor/' + sensorId, {
+                        method: 'DELETE',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        }
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            this.sensors = this.sensors.filter(s => s.id !== sensorId);
+                            // Clear hardware_sensor reference from devices
+                            this.devices.forEach(d => {
+                                if (d.hardware_sensor && d.hardware_sensor.id === sensorId) {
+                                    d.hardware_sensor = null;
+                                }
+                            });
                             this.triggerToast(data.message);
                         }
                     });

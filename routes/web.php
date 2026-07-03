@@ -17,6 +17,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/process', [DashboardController::class, 'process'])->name('process');
     Route::post('/process/update-stage', [DashboardController::class, 'updateStage'])->name('process.updateStage');
     Route::post('/process/assign-sensor', [DashboardController::class, 'assignSensor'])->name('process.assignSensor');
+    Route::post('/process/add-sensor', [DashboardController::class, 'storeSensor'])->name('process.addSensor');
+    Route::delete('/process/delete-sensor/{id}', [DashboardController::class, 'deleteSensor'])->name('process.deleteSensor');
     Route::get('/devices/{device}/data', [DashboardController::class, 'getDeviceData']);
     Route::post('/devices', [DashboardController::class, 'storeDevice'])->name('devices.store');
 });

@@ -362,27 +362,40 @@
                 </div>
 
                 <!-- Card 5: HCN Estimation (AI Model) -->
-                <div class="col-span-2 md:col-span-1 bg-[#151f32]/60 border border-violet-500/20 rounded-2xl p-5 flex flex-col justify-between hover:border-violet-500/40 transition duration-300 relative overflow-hidden">
-                    <!-- AI badge -->
-                    <div class="absolute top-3 right-3 bg-violet-500/10 border border-violet-500/30 text-violet-400 text-[9px] font-bold px-1.5 py-0.5 rounded tracking-widest uppercase">AI Model</div>
-                    <div class="flex justify-between items-start">
-                        <div class="pr-14">
-                            <p class="text-slate-400 text-xs font-semibold tracking-wider uppercase">Estimasi HCN</p>
-                            <h3 class="text-2xl font-extrabold text-white mt-2">
-                                <span x-text="latestVal.hcn !== '--' ? parseFloat(latestVal.hcn).toFixed(3) : '--'">--</span>
-                                <span class="text-xs font-semibold text-slate-500"> mg/L</span>
-                            </h3>
+                <div class="col-span-2 md:col-span-1 bg-[#151f32]/60 border border-violet-500/20 rounded-2xl p-5 flex flex-col justify-between hover:border-violet-500/40 transition duration-300 overflow-hidden">
+                    <div>
+                        <!-- AI badge -->
+                        <div class="inline-block bg-violet-500/10 border border-violet-500/30 text-violet-400 text-[9px] font-bold px-1.5 py-0.5 rounded tracking-widest uppercase mb-2"
+                             :class="latestVal.prediction_source === 'ml' ? 'text-violet-400 border-violet-500/30 bg-violet-500/10' : 'text-amber-400 border-amber-500/30 bg-amber-500/10'"
+                             x-text="latestVal.prediction_source === 'ml' ? 'AI Random Forest' : 'AI Rule-Based'">
+                            AI Model
+                        </div>
+                        <p class="text-slate-400 text-xs font-semibold tracking-wider uppercase">Estimasi HCN Air</p>
+                        <h3 class="text-2xl font-extrabold text-white mt-1">
+                            <span x-text="latestVal.hcn !== '--' ? parseFloat(latestVal.hcn).toFixed(3) : '--'">--</span>
+                            <span class="text-xs font-semibold text-slate-500"> mg/L</span>
+                        </h3>
+                    </div>
+                    
+                    <!-- Detailed predictions for Air and Umbi when ML is active -->
+                    <div class="mt-3 space-y-1.5 border-t border-slate-800/60 pt-3">
+                        <div class="flex justify-between items-center text-xs">
+                            <span class="text-slate-400">HCN Air:</span>
+                            <span class="font-bold text-white" x-text="latestVal.hcn_air_ml !== '--' ? parseFloat(latestVal.hcn_air_ml).toFixed(3) + ' mg/L' : '--'"></span>
+                        </div>
+                        <div class="flex justify-between items-center text-xs">
+                            <span class="text-slate-400 font-medium">HCN Umbi:</span>
+                            <span class="font-bold text-violet-300" x-text="latestVal.hcn_umbi_ml !== '--' ? parseFloat(latestVal.hcn_umbi_ml).toFixed(1) + ' mg/L' : '--'"></span>
+                        </div>
+                        <div class="flex justify-between items-center text-[10px] mt-1">
+                            <span class="text-slate-500">Status (Air/Umbi):</span>
+                            <span class="font-medium text-slate-300" x-text="latestVal.status_air_ml + ' / ' + latestVal.status_gadung_ml"></span>
                         </div>
                     </div>
+
                     <!-- HCN safety gauge bar -->
-                    <div class="mt-4">
-                        <div class="flex justify-between text-[10px] text-slate-500 mb-1">
-                            <span>0</span>
-                            <span class="text-emerald-400">Aman &lt;0.5</span>
-                            <span class="text-amber-400">Proses &lt;3</span>
-                            <span class="text-rose-400">15+</span>
-                        </div>
-                        <div class="w-full bg-[#1b2a47] rounded-full h-2 overflow-hidden">
+                    <div class="mt-3">
+                        <div class="w-full bg-[#1b2a47] rounded-full h-1.5 overflow-hidden">
                             <!-- Gradient: green→yellow→red -->
                             <div class="h-full rounded-full transition-all duration-700"
                                 :class="getHcnBarClass()"
@@ -433,96 +446,6 @@
             </section>
 
 
-
-            <!-- Bottom Operations Grid -->
-            <section class="grid grid-cols-1 md:grid-cols-5 gap-6">
-                
-                <!-- Active Process Details Card (3 Columns Wide) -->
-                <div class="bg-[#151f32]/60 border border-[#233554] rounded-2xl p-6 md:col-span-3 flex flex-col justify-between">
-                    <div>
-                        <div class="flex justify-between items-center mb-5">
-                            <h3 class="font-bold text-white text-base tracking-wide flex items-center space-x-2">
-                                <span>Active Process</span>
-                                <span class="flex h-2 w-2 relative">
-                                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-                                    <span class="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
-                                </span>
-                            </h3>
-                            <span class="bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-bold px-2.5 py-1 rounded-lg uppercase tracking-wider">Active</span>
-                        </div>
-
-                        <!-- Progress Bar Container -->
-                        <div class="mb-6">
-                            <div class="flex justify-between text-xs text-slate-400 mb-2">
-                                <span>Gadung detoxification cycle</span>
-                                <span class="text-amber-400 font-semibold" x-text="progress + '% completed'"></span>
-                            </div>
-                            <div class="w-full bg-[#1b2a47] rounded-full h-3 overflow-hidden border border-[#223657]">
-                                <div class="bg-gradient-to-r from-amber-500 to-amber-300 h-full rounded-full transition-all duration-1000 shadow-[0_0_12px_rgba(245,158,11,0.4)]" :style="'width: ' + progress + '%'"></div>
-                            </div>
-                        </div>
-
-                        <!-- Process Status Checklist -->
-                        <div class="space-y-4">
-                            <div class="flex items-center space-x-3.5">
-                                <div class="w-5 h-5 rounded-full border border-emerald-500 bg-emerald-500/15 flex items-center justify-center shrink-0">
-                                    <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                                    </svg>
-                                </div>
-                                <span class="text-sm font-medium text-slate-300">Initial raw yam sorting & preparation</span>
-                            </div>
-                            <div class="flex items-center space-x-3.5">
-                                <div class="w-5 h-5 rounded-full border border-amber-500 bg-amber-500/15 flex items-center justify-center shrink-0">
-                                    <div class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></div>
-                                </div>
-                                <span class="text-sm font-semibold text-white">Ongoing chemical extraction & soaking (TDS: <span x-text="latestVal.tds"></span> ppm)</span>
-                            </div>
-                            <div class="flex items-center space-x-3.5 opacity-40">
-                                <div class="w-5 h-5 rounded-full border border-slate-700 flex items-center justify-center shrink-0"></div>
-                                <span class="text-sm font-medium text-slate-400">Sensory control test (human verified)</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Human-in-the-Loop Verification Card (2 Columns Wide) -->
-                <div class="bg-[#151f32]/60 border border-[#233554] rounded-2xl p-6 md:col-span-2 flex flex-col justify-between">
-                    <div>
-                        <h3 class="font-bold text-white text-base tracking-wide mb-3 flex items-center space-x-2">
-                            <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.97 5.97 0 00-.75-2.985m-.001-1.015a9 9 0 019-9c0 .763-.095 1.503-.274 2.21a5.3 5.3 0 00-.868-.104H16.89M18 1.5a3 3 0 11-6 0 3 3 0 016 0zm-1.5 10.5a3 3 0 11-6 0 3 3 0 016 0zm-6 3a5.99 5.99 0 00-4.793 2.39A6.042 6.042 0 002.25 12h8.25" />
-                            </svg>
-                            <span>Human-in-the-Loop</span>
-                        </h3>
-                        <p class="text-slate-400 text-sm leading-relaxed mb-6">
-                            User confirmation as your control line (HITL). Once the safety status turns <strong>Aman (Safe)</strong>, verify the yam detoxification quality physically to confirm the cycle completion.
-                        </p>
-                    </div>
-
-                    <!-- Interactive Action Button with dynamic state -->
-                    <div>
-                        <button 
-                            @click="triggerConfirmation()"
-                            :disabled="confirmed"
-                            :class="confirmed ? 'bg-emerald-600/30 border-emerald-500/40 text-emerald-300 cursor-not-allowed' : 'bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold active:scale-[0.98]'"
-                            class="w-full py-3.5 rounded-xl border border-transparent shadow-lg text-center transition duration-200 flex justify-center items-center space-x-2">
-                            
-                            <template x-if="confirmed">
-                                <span class="flex items-center space-x-2">
-                                    <svg class="w-5 h-5 text-emerald-400 animate-bounce" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                                    </svg>
-                                    <span>Cycle Verified & Completed</span>
-                                </span>
-                            </template>
-                            <template x-if="!confirmed">
-                                <span>User Confirmation</span>
-                            </template>
-                        </button>
-                    </div>
-                </div>
-            </section>
         </main>
 
         <!-- Dynamic Success/Interaction Toast -->
@@ -575,7 +498,12 @@
                     turbidity: '--',
                     tds: '--',
                     temp: '--',
-                    hcn: '--'   // Estimasi kadar HCN dari AI model ESP32
+                    hcn: '--',
+                    hcn_air_ml: '--',
+                    hcn_umbi_ml: '--',
+                    status_air_ml: '--',
+                    status_gadung_ml: '--',
+                    prediction_source: 'rule-based'
                 },
 
                 // Status dan rekomendasi terbaru
@@ -586,6 +514,7 @@
                     this.renderMainChart();
                     this.renderSparklines();
                     this.fetchDeviceData();
+                    this.startPolling();
                     
                     if (this.showToast) {
                         setTimeout(() => {
@@ -611,6 +540,11 @@
                         this.latestVal.hcn         = lastLog.hcn_estimated != null
                             ? parseFloat(lastLog.hcn_estimated).toFixed(4)
                             : '--';
+                        this.latestVal.hcn_air_ml  = lastLog.hcn_air_ml != null ? parseFloat(lastLog.hcn_air_ml).toFixed(4) : '--';
+                        this.latestVal.hcn_umbi_ml = lastLog.hcn_umbi_ml != null ? parseFloat(lastLog.hcn_umbi_ml).toFixed(4) : '--';
+                        this.latestVal.status_air_ml = lastLog.status_air_ml || '--';
+                        this.latestVal.status_gadung_ml = lastLog.status_gadung_ml || '--';
+                        this.latestVal.prediction_source = lastLog.prediction_source || 'rule-based';
 
                         // Sinkronisasi status & rekomendasi dari data log terbaru
                         this.latestStatus = lastLog.safety_status || 'INIT';
@@ -635,7 +569,7 @@
                         if (tds > 700)                     detail.push(`TDS sangat tinggi (${tds.toFixed(0)} ppm)`);
                         if (hcn !== null && hcn > 3.0)     detail.push(`estimasi HCN kritis (${hcn.toFixed(3)} mg/L)`);
                         const detailStr = detail.length ? ' Penyebab: ' + detail.join(', ') + '.' : '';
-                        return 'SEGERA ganti air rendaman!' + detailStr + ' Jangan konsumsi gadung sebelum status berubah menjadi Aman.';
+                        return 'SEGERA ganti air rendaman!' + detailStr + ' Jangan konsumsi gadung sebelum status berubah menjadi Aman. (⚠️ PENTING: Air limbah rendaman mengandung racun sianida (HCN) tinggi. Jangan dibuang langsung ke selokan, kolam ikan, atau sungai karena berbahaya bagi lingkungan. Solusi: Tampung air limbah di wadah terbuka di bawah sinar matahari selama 24 jam agar racun sianida menguap aman, atau buang ke lubang resapan tanah khusus jauh dari sumber air minum).';
                     }
                     if (status === 'Proses') {
                         let hints = [];
@@ -643,7 +577,7 @@
                         if (tds > 400)  hints.push('gunakan air mengalir jika memungkinkan');
                         if (ph < 6.5)   hints.push('pantau pH mendekati netral');
                         const hintsStr = hints.length ? ' Saran: ' + hints.join('; ') + '.' : '';
-                        return 'Proses detoksifikasi berjalan.' + hintsStr + ' Lanjutkan perendaman dan pantau setiap 8–12 jam.';
+                        return 'Proses detoksifikasi berjalan.' + hintsStr + ' Lanjutkan perendaman dan pantau setiap 8–12 jam. (⚠️ Penanganan Limbah: Saat membuang air rendaman, tampung limbah di wadah terbuka terbuka selama 24 jam terlebih dahulu agar racun menguap sebelum dilepas ke lingkungan).';
                     }
                     if (status === 'Aman') {
                         return 'Air rendaman dalam kondisi aman. Gadung siap ditiriskan dan diolah lebih lanjut. Konfirmasi secara fisik sebelum diproses ke tahap memasak.';

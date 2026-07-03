@@ -656,7 +656,11 @@
                                         </td>
                                         <td class="px-4 py-3 text-center text-white font-bold tabular-nums" x-text="parseFloat(log.temperature_value).toFixed(1)"></td>
                                         <td class="px-4 py-3 text-center">
-                                            <span class="font-bold tabular-nums" :class="getHcnColor(parseFloat(log.hcn_estimated))" x-text="log.hcn_estimated ? parseFloat(log.hcn_estimated).toFixed(4) : '—'"></span>
+                                            <div class="flex flex-col items-center justify-center">
+                                                <span class="font-bold tabular-nums" :class="getHcnColor(parseFloat(log.hcn_estimated))" x-text="log.hcn_estimated ? parseFloat(log.hcn_estimated).toFixed(4) : '—'"></span>
+                                                <span x-show="log.prediction_source === 'ml'" class="text-[9px] text-violet-400 font-semibold mt-0.5" x-text="'ML (Umbi: ' + (log.hcn_umbi_ml ? parseFloat(log.hcn_umbi_ml).toFixed(1) : '—') + ')'"></span>
+                                                <span x-show="log.prediction_source !== 'ml'" class="text-[9px] text-slate-500 font-medium mt-0.5">Rule-Based</span>
+                                            </div>
                                         </td>
                                         <td class="px-4 py-3 text-center">
                                             <span class="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-lg inline-block"
@@ -769,10 +773,15 @@
                         this.latestValues.tds       = lastLog.tds_value !== undefined       ? parseFloat(lastLog.tds_value)         : null;
                         this.latestValues.temp      = lastLog.temperature_value !== undefined ? parseFloat(lastLog.temperature_value) : null;
                         this.latestValues.hcn       = lastLog.hcn_estimated !== undefined && lastLog.hcn_estimated !== null ? parseFloat(lastLog.hcn_estimated) : null;
+                        this.latestValues.hcn_air_ml = lastLog.hcn_air_ml !== undefined ? lastLog.hcn_air_ml : null;
+                        this.latestValues.hcn_umbi_ml = lastLog.hcn_umbi_ml !== undefined ? lastLog.hcn_umbi_ml : null;
+                        this.latestValues.status_air_ml = lastLog.status_air_ml !== undefined ? lastLog.status_air_ml : null;
+                        this.latestValues.status_gadung_ml = lastLog.status_gadung_ml !== undefined ? lastLog.status_gadung_ml : null;
+                        this.latestValues.prediction_source = lastLog.prediction_source !== undefined ? lastLog.prediction_source : 'rule-based';
                         this.latestSafetyStatus     = this.deviceOnline ? (lastLog.safety_status || '—') : 'Offline';
                         this.lastUpdatedTime        = this.formatLogTime(lastLog.created_at);
                     } else {
-                        this.latestValues = { ph: null, turbidity: null, tds: null, temp: null, hcn: null };
+                        this.latestValues = { ph: null, turbidity: null, tds: null, temp: null, hcn: null, hcn_air_ml: null, hcn_umbi_ml: null, status_air_ml: null, status_gadung_ml: null, prediction_source: 'rule-based' };
                         this.latestSafetyStatus = 'Offline';
                         this.lastUpdatedTime = '—';
                     }

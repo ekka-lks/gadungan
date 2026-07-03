@@ -262,5 +262,42 @@ class DashboardController extends Controller
             'sensor' => $sensor
         ]);
     }
+
+    /**
+     * Manually register a new hardware sensor from the Process page.
+     */
+    public function storeSensor(Request $request)
+    {
+        $request->validate([
+            'name'            => 'required|string|max:100',
+            'chip_identifier' => 'required|string|max:100|unique:hardware_sensors,chip_identifier',
+        ]);
+
+        $sensor = HardwareSensor::create([
+            'name'            => $request->name,
+            'chip_identifier' => $request->chip_identifier,
+        ]);
+
+        return response()->json([
+            'status'  => 'success',
+            'message' => 'Sensor "' . $sensor->name . '" berhasil didaftarkan.',
+            'sensor'  => $sensor,
+        ]);
+    }
+
+    /**
+     * Delete a hardware sensor from the system.
+     */
+    public function deleteSensor($id)
+    {
+        $sensor = HardwareSensor::findOrFail($id);
+        $name = $sensor->name;
+        $sensor->delete();
+
+        return response()->json([
+            'status'  => 'success',
+            'message' => 'Sensor "' . $name . '" berhasil dihapus.',
+        ]);
+    }
 }
 

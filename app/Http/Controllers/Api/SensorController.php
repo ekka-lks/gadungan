@@ -16,6 +16,7 @@ class SensorController extends Controller
         // ──────────────────────────────────────────────────────────────
         $request->validate([
             'device_id'         => 'required|exists:devices,id',
+            'chip_id'           => 'nullable|string|max:100',
             'ph_value'          => 'required|numeric|min:0|max:14',
             'turbidity_value'   => 'required|numeric|min:0',
             'tds_value'         => 'required|numeric|min:0',
@@ -29,23 +30,61 @@ class SensorController extends Controller
             'sensor_temp_detected'      => 'nullable|boolean',
         ]);
 
+        // ──────────────────────────────────────────────────────────────
+        // LANGKAH 1.5: Auto-register hardware sensor & smart routing
+        // ──────────────────────────────────────────────────────────────
+        $targetDeviceId = (int) $request->device_id;
+
+        if ($request->filled('chip_id')) {
+            $chipId = $request->chip_id;
+
+            // Cari atau buat record hardware sensor
+            $hwSensor = HardwareSensor::firstOrCreate(
+                ['chip_identifier' => $chipId],
+                [
+                    'name' => 'Sensor-' . substr(str_replace(':', '', $chipId), -6),
+                    'assigned_device_id' => $targetDeviceId,
+                ]
+            );
+
+            // Update waktu terakhir sensor terlihat online
+            $hwSensor->update(['last_seen_at' => now()]);
+
+            // Smart routing: jika sensor sudah di-assign ke device lain via
+            // halaman Process, gunakan assigned_device_id sebagai tujuan data
+            if ($hwSensor->assigned_device_id) {
+                $targetDeviceId = $hwSensor->assigned_device_id;
+            }
+        }
+
         $ph         = (float) $request->ph_value;
         $turbidity  = (float) $request->turbidity_value;
         $tds        = (float) $request->tds_value;
         $temp       = (float) $request->temperature_value;
-        $hcn        = $request->has('hcn_estimated') ? (float) $request->hcn_estimated : null;
 
-        // ──────────────────────────────────────────────────────────────
-        // LANGKAH 2: Rule-based AI server — validasi & klasifikasi status
-        // Ini merupakan lapisan validasi kedua (server-side) di atas
-        // model AI lokal yang sudah berjalan di ESP32.
-        //
-        // THRESHOLD FISIKOKIMIA (berbasis literatur detoksifikasi gadung):
-        //   BAHAYA  → kondisi ekstrem, HCN masih sangat tinggi
-        //   PROSES  → sedang dalam proses perendaman / pencucian HCN
-        //   AMAN    → semua parameter dalam rentang aman konsumsi
-        // ──────────────────────────────────────────────────────────────
-        $status = self::classifyStatus($ph, $turbidity, $tds, $hcn);
+        // Try ML prediction first
+        $mlPrediction = self::callMlPrediction($ph, $turbidity, $tds, $temp);
+
+        if ($mlPrediction) {
+            $hcn              = $mlPrediction['hcn_air'];
+            $status           = $mlPrediction['safety_status'];
+            $predictionSource = 'ml';
+            $hcnAirMl         = $mlPrediction['hcn_air'];
+            $hcnUmbiMl        = $mlPrediction['hcn_umbi'];
+            $statusAirMl      = $mlPrediction['status_air'];
+            $statusGadungMl   = $mlPrediction['status_gadung'];
+        } else {
+            // Fallback to rule-based AI server
+            $hcn = ($request->has('hcn_estimated') && $request->hcn_estimated !== null) 
+                ? (float) $request->hcn_estimated 
+                : self::estimateHcn($ph, $turbidity, $tds, $temp);
+            $status           = self::classifyStatus($ph, $turbidity, $tds, $hcn);
+            $predictionSource = 'rule-based';
+            $hcnAirMl         = null;
+            $hcnUmbiMl        = null;
+            $statusAirMl      = null;
+            $statusGadungMl   = null;
+        }
 
         // ──────────────────────────────────────────────────────────────
         // LANGKAH 3: Susun rekomendasi aksi berbasis status
@@ -56,13 +95,18 @@ class SensorController extends Controller
         // LANGKAH 6: Simpan ke database (transparansi komunitas)
         // ──────────────────────────────────────────────────────────────
         $log = SensorLog::create([
-            'device_id'         => $request->device_id,
+            'device_id'         => $targetDeviceId,
             'ph_value'          => round($ph,        2),
             'turbidity_value'   => round($turbidity, 2),
             'tds_value'         => round($tds,       2),
             'temperature_value' => round($temp,      2),
             'hcn_estimated'     => $hcn !== null ? round($hcn, 4) : null,
             'safety_status'     => $status,
+            'hcn_air_ml'        => $hcnAirMl !== null ? round($hcnAirMl, 4) : null,
+            'hcn_umbi_ml'       => $hcnUmbiMl !== null ? round($hcnUmbiMl, 4) : null,
+            'status_air_ml'     => $statusAirMl,
+            'status_gadung_ml'  => $statusGadungMl,
+            'prediction_source' => $predictionSource,
             // Status keberadaan sensor (dari ESP32 auto-detection)
             'sensor_ph_detected'        => $request->input('sensor_ph_detected', true),
             'sensor_turbidity_detected' => $request->input('sensor_turbidity_detected', true),
@@ -80,6 +124,11 @@ class SensorController extends Controller
             'log_id'                => $log->id,
             'safety_status_result'  => $status,
             'hcn_estimated'         => $hcn,
+            'prediction_source'     => $predictionSource,
+            'hcn_air_ml'            => $hcnAirMl,
+            'hcn_umbi_ml'           => $hcnUmbiMl,
+            'status_air_ml'         => $statusAirMl,
+            'status_gadung_ml'      => $statusGadungMl,
             'recommendation'        => $recommendation,
             'thresholds'            => [
                 'ph_safe'           => '6.5 – 7.5',
@@ -145,7 +194,8 @@ class SensorController extends Controller
             if ($hcn !== null && $hcn > 3.0) $detail[] = "estimasi HCN kritis ($hcn mg/L)";
             $detail_str = !empty($detail) ? ' Penyebab: ' . implode(', ', $detail) . '.' : '';
             return 'SEGERA ganti air rendaman!' . $detail_str
-                 . ' Jangan konsumsi gadung sebelum status berubah menjadi Aman.';
+                 . ' Jangan konsumsi gadung sebelum status berubah menjadi Aman.'
+                 . ' (⚠️ PENTING: Air limbah rendaman mengandung racun sianida (HCN) tinggi. Jangan dibuang langsung ke selokan, kolam ikan, atau sungai karena berbahaya bagi lingkungan. Solusi: Tampung air limbah di wadah terbuka di bawah sinar matahari selama 24 jam agar racun sianida menguap aman, atau buang ke lubang resapan tanah khusus jauh dari sumber air minum).';
         }
 
         if ($status === 'Proses') {
@@ -155,7 +205,8 @@ class SensorController extends Controller
             if ($ph < 6.5)        $hints[] = 'pantau pH mendekati netral';
             $hints_str = !empty($hints) ? ' Saran: ' . implode('; ', $hints) . '.' : '';
             return 'Proses detoksifikasi berjalan.' . $hints_str
-                 . ' Lanjutkan perendaman dan pantau setiap 8–12 jam.';
+                 . ' Lanjutkan perendaman dan pantau setiap 8–12 jam.'
+                 . ' (⚠️ Penanganan Limbah: Saat membuang air rendaman, tampung limbah di wadah terbuka terbuka selama 24 jam terlebih dahulu agar racun menguap sebelum dilepas ke lingkungan).';
         }
 
         return 'Air rendaman dalam kondisi aman. Gadung siap ditiriskan dan diolah lebih lanjut.'
@@ -186,4 +237,66 @@ class SensorController extends Controller
             'device_id' => $sensor->assigned_device_id, // can be null
         ]);
     }
+
+    /**
+     * Mengestimasi kadar HCN (asam sianida) dalam air rendaman gadung.
+     * Menggunakan model regresi proxy multi-variabel berbasis pengetahuan domain.
+     */
+    private static function estimateHcn(float $ph, float $turb, float $tds, float $temp): float
+    {
+        $contrib_tds  = 0.0005 * $tds;
+        $contrib_turb = 0.0003 * $turb;
+        $contrib_ph   = ($ph < 7.0) ? 0.08 * (7.0 - $ph) : 0.0;
+        $contrib_temp = ($temp > 25.0) ? 0.003 * ($temp - 25.0) : 0.0;
+
+        $hcn = $contrib_tds + $contrib_turb + $contrib_ph + $contrib_temp;
+        return max(0.0, min(15.0, $hcn));
+    }
+
+    /**
+     * Call Python ML prediction script.
+     */
+    private static function callMlPrediction(float $ph, float $turb, float $tds, float $temp): ?array
+    {
+        try {
+            // Get python path from env, fallback to 'py -3.14' or 'python'
+            $pythonPath = env('PYTHON_PATH', 'py -3.14');
+            $scriptPath = base_path('app/PythonScript/predict.py');
+
+            // Escape parameters to prevent shell injection
+            $args = array_map('escapeshellarg', [$ph, $turb, $tds, $temp]);
+            $command = "$pythonPath " . escapeshellarg($scriptPath) . " " . implode(' ', $args);
+
+            // Execute command
+            $output = [];
+            $returnVar = 1;
+            exec($command . ' 2>&1', $output, $returnVar);
+
+            $outputStr = implode("\n", $output);
+
+            if ($returnVar !== 0) {
+                // If 'py -3.14' fails, try 'python' as a fallback
+                if ($pythonPath === 'py -3.14') {
+                    $command = "python " . escapeshellarg($scriptPath) . " " . implode(' ', $args);
+                    $output = [];
+                    exec($command . ' 2>&1', $output, $returnVar);
+                    $outputStr = implode("\n", $output);
+                }
+            }
+
+            if ($returnVar === 0) {
+                $data = json_decode($outputStr, true);
+                if (json_last_error() === JSON_ERROR_NONE && isset($data['fallback_needed']) && !$data['fallback_needed']) {
+                    return $data;
+                }
+            }
+
+            \Log::warning("ML Prediction failed: " . $outputStr);
+            return null;
+        } catch (\Exception $e) {
+            \Log::error("ML Execution error: " . $e->getMessage());
+            return null;
+        }
+    }
 }
+
