@@ -195,7 +195,7 @@ class SensorController extends Controller
             $detail_str = !empty($detail) ? ' Penyebab: ' . implode(', ', $detail) . '.' : '';
             return 'SEGERA ganti air rendaman!' . $detail_str
                  . ' Jangan konsumsi gadung sebelum status berubah menjadi Aman.'
-                 . ' (⚠️ PENTING: Air limbah rendaman mengandung racun sianida (HCN) tinggi. Jangan dibuang langsung ke selokan, kolam ikan, atau sungai karena berbahaya bagi lingkungan. Solusi: Tampung air limbah di wadah terbuka di bawah sinar matahari selama 24 jam agar racun sianida menguap aman, atau buang ke lubang resapan tanah khusus jauh dari sumber air minum).';
+                 . ' (⚠️ TENTANG LIMBAH: Air bekas rendaman gadung mengandung konsentrasi Asam Sianida (HCN) yang sangat tinggi akibat pelarutan racun dari umbi. Senyawa ini bersifat toksik akut yang dapat membunuh biota air secara instan dan mencemari air tanah. PANDUAN PENANGANAN: Jangan dibuang langsung ke selokan atau sungai. Tampung limbah di wadah terbuka di bawah matahari selama 24 jam agar HCN menguap aman, atau alirkan ke lubang resapan khusus jauh dari sumur).';
         }
 
         if ($status === 'Proses') {
@@ -206,11 +206,12 @@ class SensorController extends Controller
             $hints_str = !empty($hints) ? ' Saran: ' . implode('; ', $hints) . '.' : '';
             return 'Proses detoksifikasi berjalan.' . $hints_str
                  . ' Lanjutkan perendaman dan pantau setiap 8–12 jam.'
-                 . ' (⚠️ Penanganan Limbah: Saat membuang air rendaman, tampung limbah di wadah terbuka terbuka selama 24 jam terlebih dahulu agar racun menguap sebelum dilepas ke lingkungan).';
+                 . ' (⚠️ TENTANG LIMBAH: Air limbah pada tahap ini masih membawa sisa-sisa racun sianida (HCN) yang terlarut bertahap dari umbi gadung. Meskipun kadarnya sedang, akumulasi limbah ini tetap berbahaya bagi ekosistem perairan. PANDUAN PENANGANAN: Tampung air limbah terlebih dahulu di wadah terbuka selama 24 jam agar kandungan racun menguap sebelum dibuang ke saluran pembuangan).';
         }
 
         return 'Air rendaman dalam kondisi aman. Gadung siap ditiriskan dan diolah lebih lanjut.'
-             . ' Konfirmasi secara fisik sebelum diproses ke tahap memasak.';
+             . ' Konfirmasi secara fisik sebelum diproses ke tahap memasak.'
+             . ' (⚠️ TENTANG LIMBAH: Air rendaman pada tahap akhir memiliki kadar sianida (HCN) di bawah batas bahaya. Namun, air ini tetap mengandung sisa pati organik dari gadung yang dapat membusuk dan menimbulkan bau jika menggenang. PANDUAN PENANGANAN: Buang air rendaman ke tanah terbuka atau lubang resapan agar sisa pati dapat disaring dan diurai oleh tanah secara alami, tidak dibuang ke saluran air bersih).';
     }
 
     public function getConfig(Request $request)

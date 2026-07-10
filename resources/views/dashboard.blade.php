@@ -408,40 +408,70 @@
             <!-- AI Recommendation Banner -->
             <section
                 :class="getRecommendationBannerClass()"
-                class="border rounded-2xl px-6 py-4 flex items-start space-x-4 transition-all duration-500">
-                <div class="shrink-0 mt-0.5">
-                    <!-- Icon berubah sesuai status -->
-                    <template x-if="latestStatus === 'Bahaya'">
-                        <svg class="w-6 h-6 text-rose-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
-                        </svg>
-                    </template>
-                    <template x-if="latestStatus === 'Proses'">
-                        <svg class="w-6 h-6 text-amber-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
-                        </svg>
-                    </template>
-                    <template x-if="latestStatus === 'Aman' || latestStatus === 'INIT' || latestStatus === ''">
-                        <svg class="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                    </template>
+                class="border rounded-2xl px-6 py-5 flex flex-col space-y-4 transition-all duration-500">
+                <div class="flex items-start space-x-4 w-full">
+                    <div class="shrink-0 mt-0.5">
+                        <!-- Icon berubah sesuai status -->
+                        <template x-if="latestStatus === 'Bahaya'">
+                            <svg class="w-6 h-6 text-rose-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                            </svg>
+                        </template>
+                        <template x-if="latestStatus === 'Proses'">
+                            <svg class="w-6 h-6 text-amber-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
+                            </svg>
+                        </template>
+                        <template x-if="latestStatus === 'Aman' || latestStatus === 'INIT' || latestStatus === ''">
+                            <svg class="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </template>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-xs font-bold uppercase tracking-widest mb-0.5"
+                           :class="latestStatus === 'Bahaya' ? 'text-rose-400' : latestStatus === 'Proses' ? 'text-amber-400' : 'text-emerald-400'">
+                            Rekomendasi AI &mdash; <span x-text="latestStatus"></span>
+                        </p>
+                        <p class="text-sm text-slate-200 leading-relaxed" x-text="latestRecommendation"></p>
+                    </div>
+                    <!-- HCN inline pill -->
+                    <div class="shrink-0 text-right">
+                        <p class="text-[10px] text-slate-500 uppercase tracking-wider">HCN Estimasi</p>
+                        <p class="text-lg font-bold"
+                           :class="latestStatus === 'Bahaya' ? 'text-rose-300' : latestStatus === 'Proses' ? 'text-amber-300' : 'text-emerald-300'">
+                            <span x-text="latestVal.hcn !== '--' ? parseFloat(latestVal.hcn).toFixed(3) : '--'">--</span>
+                            <span class="text-xs text-slate-500"> mg/L</span>
+                        </p>
+                    </div>
                 </div>
-                <div class="flex-1">
-                    <p class="text-xs font-bold uppercase tracking-widest mb-0.5"
-                       :class="latestStatus === 'Bahaya' ? 'text-rose-400' : latestStatus === 'Proses' ? 'text-amber-400' : 'text-emerald-400'">
-                        Rekomendasi AI &mdash; <span x-text="latestStatus"></span>
-                    </p>
-                    <p class="text-sm text-slate-200 leading-relaxed" x-text="latestRecommendation"></p>
-                </div>
-                <!-- HCN inline pill -->
-                <div class="shrink-0 text-right">
-                    <p class="text-[10px] text-slate-500 uppercase tracking-wider">HCN Estimasi</p>
-                    <p class="text-lg font-bold"
-                       :class="latestStatus === 'Bahaya' ? 'text-rose-300' : latestStatus === 'Proses' ? 'text-amber-300' : 'text-emerald-300'">
-                        <span x-text="latestVal.hcn !== '--' ? parseFloat(latestVal.hcn).toFixed(3) : '--'">--</span>
-                        <span class="text-xs text-slate-500"> mg/L</span>
-                    </p>
+                
+                <!-- Waste Info & Management Guide Section -->
+                <div class="border-t border-[#233554]/40 pt-3.5 grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
+                    <!-- Column 1: Tentang Limbah -->
+                    <div class="flex items-start space-x-3">
+                        <div class="shrink-0 mt-0.5 bg-rose-500/10 border border-rose-500/20 p-1.5 rounded-lg flex items-center justify-center">
+                            <svg class="w-4 h-4 text-rose-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="text-[11px] font-bold text-rose-400 uppercase tracking-wider mb-0.5">Tentang Limbah Rendaman Gadung</p>
+                            <p class="text-xs text-slate-300 leading-relaxed font-normal" x-text="getWasteExplanation(latestStatus)"></p>
+                        </div>
+                    </div>
+                    <!-- Column 2: Panduan Penanganan -->
+                    <div class="flex items-start space-x-3 border-t md:border-t-0 md:border-l border-[#233554]/30 pt-3 md:pt-0 md:pl-4">
+                        <div class="shrink-0 mt-0.5 bg-violet-500/10 border border-violet-500/20 p-1.5 rounded-lg flex items-center justify-center">
+                            <svg class="w-4 h-4 text-violet-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="text-[11px] font-bold text-violet-400 uppercase tracking-wider mb-0.5">Panduan Penanganan</p>
+                            <p class="text-xs text-slate-300 leading-relaxed font-normal" x-text="getWasteRecommendation(latestStatus)"></p>
+                        </div>
+                    </div>
                 </div>
             </section>
 
@@ -569,7 +599,7 @@
                         if (tds > 700)                     detail.push(`TDS sangat tinggi (${tds.toFixed(0)} ppm)`);
                         if (hcn !== null && hcn > 3.0)     detail.push(`estimasi HCN kritis (${hcn.toFixed(3)} mg/L)`);
                         const detailStr = detail.length ? ' Penyebab: ' + detail.join(', ') + '.' : '';
-                        return 'SEGERA ganti air rendaman!' + detailStr + ' Jangan konsumsi gadung sebelum status berubah menjadi Aman. (⚠️ PENTING: Air limbah rendaman mengandung racun sianida (HCN) tinggi. Jangan dibuang langsung ke selokan, kolam ikan, atau sungai karena berbahaya bagi lingkungan. Solusi: Tampung air limbah di wadah terbuka di bawah sinar matahari selama 24 jam agar racun sianida menguap aman, atau buang ke lubang resapan tanah khusus jauh dari sumber air minum).';
+                        return 'SEGERA ganti air rendaman!' + detailStr + ' Jangan konsumsi gadung sebelum status berubah menjadi Aman.';
                     }
                     if (status === 'Proses') {
                         let hints = [];
@@ -577,10 +607,36 @@
                         if (tds > 400)  hints.push('gunakan air mengalir jika memungkinkan');
                         if (ph < 6.5)   hints.push('pantau pH mendekati netral');
                         const hintsStr = hints.length ? ' Saran: ' + hints.join('; ') + '.' : '';
-                        return 'Proses detoksifikasi berjalan.' + hintsStr + ' Lanjutkan perendaman dan pantau setiap 8–12 jam. (⚠️ Penanganan Limbah: Saat membuang air rendaman, tampung limbah di wadah terbuka terbuka selama 24 jam terlebih dahulu agar racun menguap sebelum dilepas ke lingkungan).';
+                        return 'Proses detoksifikasi berjalan.' + hintsStr + ' Lanjutkan perendaman dan pantau setiap 8–12 jam.';
                     }
                     if (status === 'Aman') {
                         return 'Air rendaman dalam kondisi aman. Gadung siap ditiriskan dan diolah lebih lanjut. Konfirmasi secara fisik sebelum diproses ke tahap memasak.';
+                    }
+                    return 'Menunggu data dari sensor...';
+                },
+
+                getWasteExplanation(status) {
+                    if (status === 'Bahaya') {
+                        return 'Air bekas rendaman gadung mengandung konsentrasi Asam Sianida (HCN) yang sangat tinggi akibat pelarutan racun dari umbi. Senyawa ini bersifat toksik akut yang dapat membunuh biota air secara instan dan mencemari air tanah.';
+                    }
+                    if (status === 'Proses') {
+                        return 'Air limbah pada tahap ini masih membawa sisa-sisa racun sianida (HCN) yang terlarut bertahap dari umbi gadung. Meskipun kadarnya sedang, akumulasi limbah ini tetap berbahaya bagi ekosistem perairan.';
+                    }
+                    if (status === 'Aman') {
+                        return 'Air rendaman pada tahap akhir memiliki kadar sianida (HCN) di bawah batas bahaya. Namun, air ini tetap mengandung sisa pati organik dari gadung yang dapat membusuk dan menimbulkan bau jika menggenang.';
+                    }
+                    return 'Menunggu data dari sensor...';
+                },
+
+                getWasteRecommendation(status) {
+                    if (status === 'Bahaya') {
+                        return 'Jangan dibuang langsung ke selokan atau sungai. Tampung limbah di wadah terbuka di bawah matahari selama 24 jam agar HCN menguap aman, atau alirkan ke lubang resapan khusus jauh dari sumur.';
+                    }
+                    if (status === 'Proses') {
+                        return 'Tampung air limbah terlebih dahulu di wadah terbuka selama 24 jam agar kandungan racun menguap sebelum dibuang ke saluran pembuangan.';
+                    }
+                    if (status === 'Aman') {
+                        return 'Buang air rendaman ke tanah terbuka atau lubang resapan agar sisa pati dapat disaring dan diurai oleh tanah secara alami, tidak dibuang ke saluran air bersih.';
                     }
                     return 'Menunggu data dari sensor...';
                 },
